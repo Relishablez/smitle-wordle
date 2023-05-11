@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smite Wordle</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    
+    .letter {
+      display: inline-block;
+      padding: 5px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      background-color: #eee;
+    }
+    
+    .correct {
+      background-color: green;
+      color: white;
+    }
+    
+    .wrong-position {
+      background-color: yellow;
+      color: black;
+    }
+    
+    .wrong {
+      background-color: grey;
+    }
+  </style>
+</head>
+<body>
+  <h1>Smite Wordle</h1>
+  <p>Guess the name of a Smite god!</p>
+  
+  <div id="word-container"></div>
+  <form id="guess-form">
+    <input type="text" id="guess-input" />
+    <button type="submit">Guess</button>
+    <button type="button" id="reset-button">Reset</button>
+  </form>
+  
+  <script>
+    // Retrieve the list of Smite gods from the JSON file
+    fetch('smite_gods.json')
+      .then(response => response.json())
+      .then(data => {
+        const gods = data.gods;
+        let currentGod;
+        let guessedLetters = [];
+        let gameWon = false;
+      
+        // Pick a random god
+        function pickRandomGod() {
+          currentGod = gods[Math.floor(Math.random() * gods.length)];
+        }
+      
+        // Display the current word
+        function displayWord() {
+          const wordContainer = document.getElementById('word-container');
+          wordContainer.innerHTML = '';
+        
+          for (let letter of currentGod) {
+            const letterElement = document.createElement('span');
+            letterElement.className = 'letter';
+          
+            if (guessedLetters.includes(letter)) {
+              if (currentGod.indexOf(letter) === guessedLetters.indexOf(letter)) {
+                letterElement.innerText = letter;
+                letterElement.classList.add('correct');
+              } else {
+                letterElement.innerText = letter;
+                letterElement.classList.add('wrong-position');
+              }
+            } else {
+              letterElement.innerText = '?';
+              letterElement.classList.add('wrong');
+            }
+          
+            wordContainer.appendChild(letterElement);
+          }
+        }
+      
+        // Handle guess submission
+        function handleGuess(event) {
+          event.preventDefault();
+        
+          if (gameWon) {
+            return; // Ignore guesses after winning the game
+          }
+        
+          const guessInput = document.getElementById('guess-input');
+          const guess = guessInput.value.toUpperCase();
+          guessInput.value = '';
+        
+          for (let letter of guess) {
+            if (!guessedLetters.includes(letter)) {
+              guessedLetters.push(letter);
+            }
+          }
+        
+          displayWord();
+        
+          console.log('Guessed gods:', guessedLetters);
+        
+          // Check if the game is won
+          if (currentGod === guess) {
+            gameOver(true);
+          }
+        }
+      
+        // Reset the game
+        function resetGame() {
+          guessedLetters = [];
+          gameWon = false;
+          pickRandomGod();
+          displayWord();
+          console.log('Game reset');
+        }
+      
+        // Game over
+        function gameOver(won) {
+          gameWon = won;
+        
+          const guessForm = document.getElementById('guess-form');
+          guessForm.innerHTML = '';
+        
+          const message = document.createElement('p');
+          message.style.fontWeight = 'bold';
+                    if (won) {
+            message.innerText = 'Congratulations! You guessed the god correctly!';
+            message.style.color = 'green';
+          } else {
+            message.innerText = 'Game over! Incorrect guess.';
+            message.style.color = 'red';
+          }
+        
+          guessForm.appendChild(message);
+        }
+      
+        // Start the game
+        function startGame() {
+          pickRandomGod();
+          displayWord();
+        
+          const guessForm = document.getElementById('guess-form');
+          guessForm.addEventListener('submit', handleGuess);
+        
+          const resetButton = document.getElementById('reset-button');
+          resetButton.addEventListener('click', resetGame);
+        }
+      
+        // Reset the game
+        function resetGame() {
+          guessedLetters = [];
+          gameWon = false;
+          pickRandomGod();
+          displayWord();
+          console.log('Game reset');
+        }
+      
+        // Start the game
+        startGame();
+      })
+      .catch(error => {
+        console.log('Error fetching Smite gods:', error);
+      });
+  </script>
+</body>
+</html>
+
+         
